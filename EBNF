@@ -1,0 +1,33 @@
+statement = (declaration | assignment | function_declaration | loop_statement | conditional_statement);
+
+function_declaration = "function" identifier "(" {identifier {","}*}* ")" {statements}+ "end";
+
+assignment = identifier "=" relational_expression;
+
+declaration = declaration_flexor {identifier}* ["=" {relational_expression}+]
+declaration_flexor = "local" | "global";
+
+loop_statement = "while" relational_expression "do" {statement}+ "end" |
+                 "repeat" {statement}+ "until" relational_expression;
+
+conditional_statement = "if" relational_expression "then" {statement}+ "end" |
+                        "if" relational_expression "then" {statement}+ "else" {statement}+ "end";
+                        "switch" identifier ("case" (real_number | string) "do" {statement}+ "break")+ ["default" "do" {statement}+ "break"];
+
+factor = real_number | string | identifier ["(" {relational_expression {","}*}* ")"] | (("+" | "-" | "not") factor) | relational_expression;
+
+term = factor {term_operator factor}*;
+term_operator = "*" | "/" | "%" | "and";
+
+expression = term {expression_operator term}*;
+expression_operator = "+" | "-" | "or";
+
+relational_expression = expression {relational_operator expression}*;
+relational_operator = "==" | "<" | ">" | "<=" | ">=";
+
+identifier = letter {letter | number | "_"};
+string = ({letter}* | {number}) ({letter} | {number}*);
+real_number = number {number};
+
+letter = [a-Z];
+number = [0-9];
