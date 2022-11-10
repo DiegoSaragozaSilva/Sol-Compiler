@@ -1,33 +1,55 @@
-statement = (declaration | assignment | function_declaration | loop_statement | conditional_statement);
+statement = declaration | assignment | function_declaration | loop_statement | conditional_statement | statement;
 
-function_declaration = "function" identifier "(" {identifier {","}*}* ")" {statements}+ "end";
+function_declaration = "function" identifier "(" function_signature_arguments ")" statement "end";
+function_signature_arguments = identifier
+                             | identifier "," function_arguments
+                             | ""
 
 assignment = identifier "=" relational_expression;
 
-declaration = declaration_flexor {identifier}* ["=" {relational_expression}+]
+declaration = declaration_flexor identifier 
+            | declaration_flexor identifier "=" relational_expression
 declaration_flexor = "local" | "global";
 
-loop_statement = "while" relational_expression "do" {statement}+ "end" |
-                 "repeat" {statement}+ "until" relational_expression;
+loop_statement = "while" relational_expression "do" statement "end" 
+               | "repeat" statement "until" relational_expression;
 
-conditional_statement = "if" relational_expression "then" {statement}+ "end" |
-                        "if" relational_expression "then" {statement}+ "else" {statement}+ "end";
-                        "switch" identifier ("case" (real_number | string) "do" {statement}+ "break")+ ["default" "do" {statement}+ "break"];
+conditional_statement = "if" relational_expression "then" statement "end" 
+                      | "if" relational_expression "then" statement "else" statement "end"
+                      | "switch" identifier switch_cases;
 
-factor = real_number | string | identifier ["(" {relational_expression {","}*}* ")"] | (("+" | "-" | "not") factor) | relational_expression;
+switch_cases = "case" real_number "do" statement "break"
+             | "case" real_number "do" statement "break" switch_cases
+             | "default" "do" statement "break";
 
-term = factor {term_operator factor}*;
+factor = real_number 
+       | string 
+       | identifier 
+       | identifier "(" function_arguments ")" 
+       | expression_operator factor 
+       | relational_expression;
+
+function_arguments = relational_expression
+                   | relational_expression "," function_arguments
+                   | "";
+
+term = factor 
+     | factor term_operator term;
 term_operator = "*" | "/" | "%" | "and";
 
-expression = term {expression_operator term}*;
+expression = term
+           | term expression_operator expression;
 expression_operator = "+" | "-" | "or";
 
-relational_expression = expression {relational_operator expression}*;
+relational_expression = expression
+                      | expression relational_operator relational_expression;
 relational_operator = "==" | "<" | ">" | "<=" | ">=";
 
-identifier = letter {letter | number | "_"};
-string = ({letter}* | {number}) ({letter} | {number}*);
-real_number = number {number};
+identifier = letter string;
+string = string (letter | digit)
+       | (letter | digit)
+real_number = number
+            | number real_number;
 
-letter = [a-Z];
+letter = [a-Z] "_";
 number = [0-9];
